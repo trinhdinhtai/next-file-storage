@@ -1,6 +1,9 @@
 "use client"
 
+import { api } from "@/convex/_generated/api"
+import { useOrganization, useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "convex/react"
 import { Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 
@@ -28,6 +31,11 @@ import {
 import { Input } from "@/components/ui/input"
 
 export default function UploadButton() {
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
+  const createFile = useMutation(api.files.createFile)
+  const organization = useOrganization()
+  const user = useUser()
+
   const form = useForm<UploadFileFormValues>({
     resolver: zodResolver(uploadFileFormSchema),
     defaultValues: {
@@ -43,7 +51,28 @@ export default function UploadButton() {
 
   const fileRef = form.register("file")
 
-  const onSubmit = (values: UploadFileFormValues) => {}
+  const onSubmit = async (values: UploadFileFormValues) => {
+    const postUrl = await generateUploadUrl()
+    const fileType = values.file[0].type
+
+    const result = await fetch(postUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": fileType,
+      },
+      body: values.file[0],
+    })
+
+    const { storageId } = await result.json()
+
+    try {
+      await createFile({
+        name: values.title,
+      })
+    } catch (error) {}
+  }
+
+  if (!organization.isLoaded || !user.isLoaded) return null
 
   return (
     <Dialog>
