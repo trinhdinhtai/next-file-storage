@@ -7,7 +7,7 @@ export const createFile = mutation({
     name: v.string(),
   },
   async handler(ctx, args) {
-    await ctx.db.insert("file", {
+    await ctx.db.insert("files", {
       name: args.name,
     })
   },
