@@ -1,11 +1,13 @@
 "use client"
 
 import { api } from "@/convex/_generated/api"
+import { Doc } from "@/convex/_generated/dataModel"
 import { useOrganization, useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "convex/react"
 import { Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 
 import {
   uploadFileFormSchema,
@@ -33,7 +35,7 @@ import { Input } from "@/components/ui/input"
 export default function UploadButton() {
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   const createFile = useMutation(api.files.createFile)
-  const organization = useOrganization()
+  const { organization } = useOrganization()
   const user = useUser()
 
   const form = useForm<UploadFileFormValues>({
@@ -51,6 +53,8 @@ export default function UploadButton() {
 
   const fileRef = form.register("file")
 
+  if (!organization?.id || !user.isLoaded) return null
+
   const onSubmit = async (values: UploadFileFormValues) => {
     const postUrl = await generateUploadUrl()
     const fileType = values.file[0].type
@@ -65,14 +69,23 @@ export default function UploadButton() {
 
     const { storageId } = await result.json()
 
+    const types = {
+      "image/png": "image",
+      "application/pdf": "pdf",
+      "text/csv": "csv",
+    } as Record<string, Doc<"files">["type"]>
+
     try {
       await createFile({
         name: values.title,
+        fileId: storageId,
+        orgId: organization.id,
+        type: types[fileType],
       })
-    } catch (error) {}
+    } catch (error) {
+      toast.error("Failed to upload file")
+    }
   }
-
-  if (!organization.isLoaded || !user.isLoaded) return null
 
   return (
     <Dialog>
