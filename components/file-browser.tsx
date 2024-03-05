@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { api } from "@/convex/_generated/api"
 import { Doc } from "@/convex/_generated/dataModel"
+import { useOrganization, useUser } from "@clerk/nextjs"
 import { useQuery } from "convex/react"
 import { GridIcon, Loader2, RowsIcon } from "lucide-react"
 
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import FileCard from "@/components/file-card"
 import UploadButton from "@/components/upload-button"
 
 interface FileBrowserProps {
@@ -22,7 +24,21 @@ interface FileBrowserProps {
 }
 
 export default function FileBrowser({ title }: FileBrowserProps) {
+  const { organization } = useOrganization()
+
+  const [query, setQuery] = useState("")
   const [type, setType] = useState<Doc<"files">["type"] | "all">("all")
+
+  const files = useQuery(
+    api.files.getFiles,
+    organization?.id
+      ? {
+          orgId: organization?.id,
+          type: type === "all" ? undefined : type,
+          query,
+        }
+      : "skip"
+  )
 
   return (
     <>
@@ -65,6 +81,21 @@ export default function FileBrowser({ title }: FileBrowserProps) {
 
           {}
         </div>
+
+        {files ? (
+          <TabsContent value="grid">
+            <div className="grid grid-cols-3 gap-4">
+              {files?.map((file) => {
+                return <FileCard key={file._id} file={file} />
+              })}
+            </div>
+          </TabsContent>
+        ) : (
+          <div className="mt-24 flex w-full flex-col items-center gap-8">
+            <Loader2 className="h-16 w-16 animate-spin" />
+            <div className="text-xl">Loading your files...</div>
+          </div>
+        )}
       </Tabs>
     </>
   )
