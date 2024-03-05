@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import FileActions from "@/components/file-actions"
 
 interface FileCardProps {
   file: Doc<"files">
@@ -38,6 +39,9 @@ export default function FileCard({ file }: FileCardProps) {
           <div className="flex justify-center">{typeIcons[file.type]}</div>{" "}
           {file.name}
         </CardTitle>
+        <div className="absolute right-3 top-4">
+          <FileActions file={file} />
+        </div>
       </CardHeader>
 
       <CardContent className="flex h-[200px] items-center justify-center">
