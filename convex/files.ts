@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values"
 
-import { mutation, MutationCtx, QueryCtx } from "./_generated/server"
+import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server"
 import { fileTypes } from "./schema"
 
 export const generateUploadUrl = mutation(async (ctx) => {
@@ -60,5 +60,35 @@ export const createFile = mutation({
       type,
       userId: hasAccess.user._id,
     })
+  },
+})
+
+export const getFiles = query({
+  args: {
+    orgId: v.string(),
+    query: v.optional(v.string()),
+    type: v.optional(fileTypes),
+  },
+  async handler(ctx, { orgId, query, type }) {
+    const hasAccess = await hasAccessToOrg(ctx, orgId)
+
+    if (!hasAccess) return []
+
+    let files = await ctx.db
+      .query("files")
+      .withIndex("by_orgId", (q) => q.eq("orgId", orgId))
+      .collect()
+
+    if (query) {
+      files = files.filter((file) =>
+        file.name.toLowerCase().includes(query.toLowerCase())
+      )
+    }
+
+    if (type) {
+      files = files.filter((file) => file.type === type)
+    }
+
+    return files
   },
 })

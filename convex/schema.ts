@@ -19,7 +19,7 @@ export default defineSchema({
     fileId: v.id("_storage"),
     userId: v.id("users"),
     shouldDelete: v.optional(v.boolean()),
-  }),
+  }).index("by_orgId", ["orgId"]),
   users: defineTable({
     name: v.optional(v.string()),
     image: v.optional(v.string()),
