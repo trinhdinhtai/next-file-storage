@@ -7,6 +7,15 @@ const jiti = createJiti(fileURLToPath(import.meta.url))
 jiti("./env")
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "quaint-spider-762.convex.cloud",
+      },
+    ],
+  },
+}
 
 export default nextConfig
