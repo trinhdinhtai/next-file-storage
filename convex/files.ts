@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values"
 
+import { Id } from "./_generated/dataModel"
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server"
 import { fileTypes } from "./schema"
 
@@ -37,6 +38,25 @@ export async function hasAccessToOrg(
   if (!hasAccess) return null
 
   return { user }
+}
+
+async function hasAccessToFile(
+  ctx: QueryCtx | MutationCtx,
+  fileId: Id<"files">
+) {
+  const file = await ctx.db.get(fileId)
+
+  if (!file) {
+    return null
+  }
+
+  const hasAccess = await hasAccessToOrg(ctx, file.orgId)
+
+  if (!hasAccess) {
+    return null
+  }
+
+  return { user: hasAccess.user, file }
 }
 
 export const createFile = mutation({
@@ -90,5 +110,20 @@ export const getFiles = query({
     }
 
     return files
+  },
+})
+
+export const deleteFile = mutation({
+  args: { fileId: v.id("files") },
+  async handler(ctx, args) {
+    const access = await hasAccessToFile(ctx, args.fileId)
+
+    if (!access) {
+      throw new ConvexError("no access to file")
+    }
+
+    await ctx.db.patch(args.fileId, {
+      shouldDelete: true,
+    })
   },
 })
