@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { api } from "@/convex/_generated/api"
 import { Doc } from "@/convex/_generated/dataModel"
 import { useOrganization, useUser } from "@clerk/nextjs"
@@ -38,6 +39,8 @@ export default function UploadButton() {
   const { organization } = useOrganization()
   const user = useUser()
 
+  const [isOpenDialog, setIsOpenDialog] = useState(false)
+
   const form = useForm<UploadFileFormValues>({
     resolver: zodResolver(uploadFileFormSchema),
     defaultValues: {
@@ -48,6 +51,7 @@ export default function UploadButton() {
 
   const {
     control,
+    reset,
     formState: { isSubmitting },
   } = form
 
@@ -82,13 +86,23 @@ export default function UploadButton() {
         orgId: organization.id,
         type: types[fileType],
       })
+
+      reset()
+      setIsOpenDialog(false)
+      toast.success("File uploaded")
     } catch (error) {
+      console.log(error)
       toast.error("Failed to upload file")
     }
   }
 
+  const onOpenDialogChange = (isOpen: boolean) => {
+    setIsOpenDialog(isOpen)
+    reset()
+  }
+
   return (
-    <Dialog>
+    <Dialog open={isOpenDialog} onOpenChange={onOpenDialogChange}>
       <DialogTrigger asChild>
         <Button>Upload File</Button>
       </DialogTrigger>
@@ -126,7 +140,11 @@ export default function UploadButton() {
                   <FormItem>
                     <FormLabel>File</FormLabel>
                     <FormControl>
-                      <Input type="file" {...fileRef} />
+                      <Input
+                        type="file"
+                        accept="image/png,.csv,.pdf"
+                        {...fileRef}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
