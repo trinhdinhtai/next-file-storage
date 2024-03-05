@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values"
 
-import { Id } from "./_generated/dataModel"
+import { Doc, Id } from "./_generated/dataModel"
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server"
 import { fileTypes } from "./schema"
 
@@ -113,6 +113,16 @@ export const getFiles = query({
   },
 })
 
+function assertCanDeleteFile(user: Doc<"users">, file: Doc<"files">) {
+  const canDelete =
+    file.userId === user._id ||
+    user.orgIds.find((org) => org.orgId === file.orgId)?.role === "admin"
+
+  if (!canDelete) {
+    throw new ConvexError("You have no access to delete this file")
+  }
+}
+
 export const deleteFile = mutation({
   args: { fileId: v.id("files") },
   async handler(ctx, args) {
@@ -122,8 +132,27 @@ export const deleteFile = mutation({
       throw new ConvexError("no access to file")
     }
 
+    assertCanDeleteFile(access.user, access.file)
+
     await ctx.db.patch(args.fileId, {
       shouldDelete: true,
+    })
+  },
+})
+
+export const restoreFile = mutation({
+  args: { fileId: v.id("files") },
+  async handler(ctx, args) {
+    const access = await hasAccessToFile(ctx, args.fileId)
+
+    if (!access) {
+      throw new ConvexError("no access to file")
+    }
+
+    assertCanDeleteFile(access.user, access.file)
+
+    await ctx.db.patch(args.fileId, {
+      shouldDelete: false,
     })
   },
 })

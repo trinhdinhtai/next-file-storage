@@ -1,9 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { api } from "@/convex/_generated/api"
 import { Doc } from "@/convex/_generated/dataModel"
 import { Protect } from "@clerk/nextjs"
-import { FileIcon, MoreVertical, Star, TrashIcon } from "lucide-react"
+import { useMutation, useQuery } from "convex/react"
+import { FileIcon, MoreVertical, Star, TrashIcon, UndoIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { getFileUrl } from "@/lib/file"
 import {
@@ -29,10 +32,31 @@ interface FileActionsProps {
 }
 
 export default function FileActions({ file }: FileActionsProps) {
+  const deleteFile = useMutation(api.files.deleteFile)
+  const restoreFile = useMutation(api.files.restoreFile)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const currentUser = useQuery(api.users.getCurrentUser)
 
   const handleDownload = () => {
     window.open(getFileUrl(file.fileId), "_blank")
+  }
+
+  const handleDangerItemClick = () => {
+    if (file.shouldDelete) {
+      restoreFile({
+        fileId: file._id,
+      })
+    } else {
+      setIsConfirmOpen(true)
+    }
+  }
+
+  const handleDeleteFile = async () => {
+    await deleteFile({
+      fileId: file._id,
+    })
+
+    toast.success("File deleted successfully")
   }
 
   const menuItems = [
@@ -62,7 +86,9 @@ export default function FileActions({ file }: FileActionsProps) {
 
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction>Continue</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteFile}>
+              Continue
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -84,17 +110,29 @@ export default function FileActions({ file }: FileActionsProps) {
           ))}
 
           <Protect
-            condition={(check) =>
-              check({
-                role: "org:admin",
-              })
-            }
+            condition={(check) => {
+              return (
+                check({
+                  role: "org:admin",
+                }) || file.userId === currentUser?._id
+              )
+            }}
+            fallback={<></>}
           >
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex cursor-pointer items-center gap-1">
-              <div className="flex cursor-pointer items-center gap-1 text-red-600">
-                <TrashIcon className="h-4 w-4" /> Delete
-              </div>
+            <DropdownMenuItem
+              className="flex cursor-pointer items-center gap-1"
+              onClick={handleDangerItemClick}
+            >
+              {file.shouldDelete ? (
+                <div className="flex cursor-pointer items-center gap-1 text-green-600">
+                  <UndoIcon className="h-4 w-4" /> Restore
+                </div>
+              ) : (
+                <div className="flex cursor-pointer items-center gap-1 text-red-600">
+                  <TrashIcon className="h-4 w-4" /> Delete
+                </div>
+              )}
             </DropdownMenuItem>
           </Protect>
         </DropdownMenuContent>
