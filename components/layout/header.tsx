@@ -19,13 +19,12 @@ export default function Header() {
           FileDrive
         </Link>
 
-        <SignedIn>
-          <Button variant="outline">
-            <Link href="/dashboard/files">Your Files</Link>
-          </Button>
-        </SignedIn>
-
-        <div className="flex gap-2">
+        <div className="flex  gap-2">
+          <SignedIn>
+            <Button variant="outline">
+              <Link href="/dashboard/files">Your Files</Link>
+            </Button>
+          </SignedIn>
           <OrganizationSwitcher />
           <UserButton />
           <SignedOut>
