@@ -21,9 +21,10 @@ import UploadButton from "@/components/upload-button"
 
 interface FileBrowserProps {
   title: string
+  deletedOnly?: boolean
 }
 
-export default function FileBrowser({ title }: FileBrowserProps) {
+export default function FileBrowser({ title, deletedOnly }: FileBrowserProps) {
   const { organization } = useOrganization()
 
   const [query, setQuery] = useState("")
@@ -36,6 +37,7 @@ export default function FileBrowser({ title }: FileBrowserProps) {
           orgId: organization?.id,
           type: type === "all" ? undefined : type,
           query,
+          deletedOnly,
         }
       : "skip"
   )

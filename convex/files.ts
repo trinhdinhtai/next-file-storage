@@ -88,8 +88,9 @@ export const getFiles = query({
     orgId: v.string(),
     query: v.optional(v.string()),
     type: v.optional(fileTypes),
+    deletedOnly: v.optional(v.boolean()),
   },
-  async handler(ctx, { orgId, query, type }) {
+  async handler(ctx, { orgId, query, type, deletedOnly }) {
     const hasAccess = await hasAccessToOrg(ctx, orgId)
 
     if (!hasAccess) return []
@@ -107,6 +108,12 @@ export const getFiles = query({
 
     if (type) {
       files = files.filter((file) => file.type === type)
+    }
+
+    if (deletedOnly) {
+      files = files.filter((file) => file.shouldDelete)
+    } else {
+      files = files.filter((file) => !file.shouldDelete)
     }
 
     return files
