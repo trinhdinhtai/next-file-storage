@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import FileCard from "@/components/file-card"
+import SearchBar from "@/components/search-bar"
 import UploadButton from "@/components/upload-button"
 
 interface FileBrowserProps {
@@ -46,6 +47,7 @@ export default function FileBrowser({ title, deletedOnly }: FileBrowserProps) {
     <>
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-4xl font-bold">{title}</h1>
+        <SearchBar query={query} setQuery={setQuery} />
         <UploadButton />
       </div>
 
