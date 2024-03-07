@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import FileCard from "@/components/file-card"
+import Placeholder from "@/components/placeholder"
 import SearchBar from "@/components/search-bar"
 import UploadButton from "@/components/upload-button"
 
@@ -101,6 +102,8 @@ export default function FileBrowser({ title, deletedOnly }: FileBrowserProps) {
           </div>
         )}
       </Tabs>
+
+      {files?.length === 0 && <Placeholder />}
     </>
   )
 }
