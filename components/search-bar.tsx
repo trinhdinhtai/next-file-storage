@@ -35,7 +35,9 @@ export default function SearchBar({ query, setQuery }: SearchBarProps) {
     formState: { isSubmitting },
   } = form
 
-  async function onSubmit(values: SearchFormValues) {}
+  async function onSubmit(values: SearchFormValues) {
+    setQuery(values.query)
+  }
 
   return (
     <Form {...form}>
