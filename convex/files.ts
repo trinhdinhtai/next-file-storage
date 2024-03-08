@@ -89,8 +89,9 @@ export const getFiles = query({
     query: v.optional(v.string()),
     type: v.optional(fileTypes),
     deletedOnly: v.optional(v.boolean()),
+    favoritesOnly: v.optional(v.boolean()),
   },
-  async handler(ctx, { orgId, query, type, deletedOnly }) {
+  async handler(ctx, { orgId, query, type, deletedOnly, favoritesOnly }) {
     const hasAccess = await hasAccessToOrg(ctx, orgId)
 
     if (!hasAccess) return []

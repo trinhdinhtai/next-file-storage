@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { api } from "@/convex/_generated/api"
 import { Doc } from "@/convex/_generated/dataModel"
-import { useOrganization, useUser } from "@clerk/nextjs"
+import { useOrganization } from "@clerk/nextjs"
 import { useQuery } from "convex/react"
 import { GridIcon, Loader2, RowsIcon } from "lucide-react"
 
@@ -24,9 +24,14 @@ import UploadButton from "@/components/upload-button"
 interface FileBrowserProps {
   title: string
   deletedOnly?: boolean
+  favoritesOnly?: boolean
 }
 
-export default function FileBrowser({ title, deletedOnly }: FileBrowserProps) {
+export default function FileBrowser({
+  title,
+  deletedOnly,
+  favoritesOnly,
+}: Readonly<FileBrowserProps>) {
   const { organization } = useOrganization()
 
   const [query, setQuery] = useState("")
@@ -40,6 +45,7 @@ export default function FileBrowser({ title, deletedOnly }: FileBrowserProps) {
           type: type === "all" ? undefined : type,
           query,
           deletedOnly,
+          favoritesOnly,
         }
       : "skip"
   )
