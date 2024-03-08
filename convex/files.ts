@@ -117,6 +117,19 @@ export const getFiles = query({
       files = files.filter((file) => !file.shouldDelete)
     }
 
+    if (favoritesOnly) {
+      const favorites = await ctx.db
+        .query("favorites")
+        .withIndex("by_userId_orgId_fileId", (q) =>
+          q.eq("userId", hasAccess.user._id).eq("orgId", orgId)
+        )
+        .collect()
+
+      files = files.filter((file) =>
+        favorites.some((favorite) => favorite.fileId === file._id)
+      )
+    }
+
     return files
   },
 })
