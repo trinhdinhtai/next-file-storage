@@ -18,10 +18,10 @@ import {
 import FileActions from "@/components/file-actions"
 
 interface FileCardProps {
-  file: Doc<"files">
+  file: Doc<"files"> & { isFavorite: boolean }
 }
 
-export default function FileCard({ file }: FileCardProps) {
+export default function FileCard({ file }: Readonly<FileCardProps>) {
   const userProfile = useQuery(api.users.getUserProfile, {
     userId: file.userId,
   })
@@ -40,7 +40,7 @@ export default function FileCard({ file }: FileCardProps) {
           {file.name}
         </CardTitle>
         <div className="absolute right-3 top-4">
-          <FileActions file={file} />
+          <FileActions file={file} isFavorite={file.isFavorite} />
         </div>
       </CardHeader>
 

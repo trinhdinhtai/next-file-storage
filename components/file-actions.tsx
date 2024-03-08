@@ -9,6 +9,7 @@ import { FileIcon, MoreVertical, Star, TrashIcon, UndoIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { getFileUrl } from "@/lib/file"
+import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,13 +30,20 @@ import {
 
 interface FileActionsProps {
   file: Doc<"files">
+  isFavorite: boolean
 }
 
-export default function FileActions({ file }: FileActionsProps) {
+export default function FileActions({
+  file,
+  isFavorite,
+}: Readonly<FileActionsProps>) {
   const deleteFile = useMutation(api.files.deleteFile)
   const restoreFile = useMutation(api.files.restoreFile)
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const toggleFavorite = useMutation(api.files.toggleFavorite)
+
   const currentUser = useQuery(api.users.getCurrentUser)
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleDownload = () => {
     window.open(getFileUrl(file.fileId), "_blank")
@@ -59,16 +67,26 @@ export default function FileActions({ file }: FileActionsProps) {
     toast.success("File deleted successfully")
   }
 
+  const handleToggleFavorite = async () => {
+    await toggleFavorite({
+      fileId: file._id,
+    })
+  }
+
   const menuItems = [
     {
-      icon: <FileIcon className="h-4 w-4" />,
-      label: "Download",
+      Icon: <FileIcon className="h-4 w-4" />,
+      Label: "Download",
       onClick: handleDownload,
     },
     {
-      icon: <Star className="h-4 w-4" />,
-      label: "Favorite",
-      onClick: () => {},
+      Icon: (
+        <Star className={cn("h-4 w-4", isFavorite ? "text-yellow-600" : "")} />
+      ),
+      Label: (
+        <span className={isFavorite ? "text-yellow-600" : ""}>Favorite</span>
+      ),
+      onClick: handleToggleFavorite,
     },
   ]
 
@@ -101,11 +119,11 @@ export default function FileActions({ file }: FileActionsProps) {
         <DropdownMenuContent>
           {menuItems.map((item) => (
             <DropdownMenuItem
-              key={item.label}
+              key={item.Label}
               onClick={item.onClick}
               className="flex cursor-pointer items-center gap-1"
             >
-              {item.icon} {item.label}
+              {item.Icon} {item.Label}
             </DropdownMenuItem>
           ))}
 

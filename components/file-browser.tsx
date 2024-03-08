@@ -50,6 +50,19 @@ export default function FileBrowser({
       : "skip"
   )
 
+  const favorites = useQuery(
+    api.files.getAllFavorites,
+    organization?.id ? { orgId: organization?.id } : "skip"
+  )
+
+  const formattedFiles =
+    files?.map((file) => ({
+      ...file,
+      isFavorite: (favorites ?? []).some(
+        (favorite: any) => favorite.fileId === file._id
+      ),
+    })) ?? []
+
   return (
     <>
       <div className="mb-8 flex items-center justify-between">
@@ -93,10 +106,10 @@ export default function FileBrowser({
           {}
         </div>
 
-        {files ? (
+        {formattedFiles ? (
           <TabsContent value="grid">
             <div className="grid grid-cols-3 gap-4">
-              {files?.map((file) => {
+              {formattedFiles.map((file) => {
                 return <FileCard key={file._id} file={file} />
               })}
             </div>
