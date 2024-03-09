@@ -117,9 +117,9 @@ export default function FileActions({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent>
-          {menuItems.map((item) => (
+          {menuItems.map((item, index) => (
             <DropdownMenuItem
-              key={item.Label}
+              key={index}
               onClick={item.onClick}
               className="flex cursor-pointer items-center gap-1"
             >
