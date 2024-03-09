@@ -19,6 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import FileCard from "@/components/file-card"
 import Placeholder from "@/components/placeholder"
 import SearchBar from "@/components/search-bar"
+import { columns } from "@/components/table/columns"
+import FileTable from "@/components/table/file-table"
 import UploadButton from "@/components/upload-button"
 
 interface FileBrowserProps {
@@ -107,13 +109,18 @@ export default function FileBrowser({
         </div>
 
         {formattedFiles ? (
-          <TabsContent value="grid">
-            <div className="grid grid-cols-3 gap-4">
-              {formattedFiles.map((file) => {
-                return <FileCard key={file._id} file={file} />
-              })}
-            </div>
-          </TabsContent>
+          <>
+            <TabsContent value="grid">
+              <div className="grid grid-cols-3 gap-4">
+                {formattedFiles.map((file) => {
+                  return <FileCard key={file._id} file={file} />
+                })}
+              </div>
+            </TabsContent>
+            <TabsContent value="table">
+              <FileTable columns={columns} data={formattedFiles} />
+            </TabsContent>
+          </>
         ) : (
           <div className="mt-24 flex w-full flex-col items-center gap-8">
             <Loader2 className="h-16 w-16 animate-spin" />
